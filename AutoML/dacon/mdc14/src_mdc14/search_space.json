@@ -1,0 +1,5 @@
+{
+    "n_estimators": {"_type":"randint", "_value":[1000, 2000]},
+    "max_depth": {"_type":"randint", "_value":[2, 7]},
+    "num_leaves": {"_type":"randint", "_value":[50, 128]}
+}

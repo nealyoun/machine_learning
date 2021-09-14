@@ -1,0 +1,21 @@
+authorName: nayo                     # 작성자 이름
+experimentName: mdc14                # 실험 제목
+trialConcurrency: 1                  # 동시에 실행할 실험 수
+maxExecDuration: 48h                 # 실험을 수행할 시간
+maxTrialNum: 99999                   # 실험을 수행할 최대 횟수
+#choice: local, remote, pai
+trainingServicePlatform: local       # 실험을 수행하는 위치, Local: 현재 컴퓨터 Remote: 원격 컴퓨터
+#nniManagerIp:
+#choice: true, false
+searchSpacePath: search_space.json   # 파라미터 범위를 저장하고 있는 json 파일
+useAnnotation: false                 # 파라미터 범위를 나타낼 때, 사용할 방법 스크립트 or json 파일
+tuner:                               # 실험 스케쥴러 정보
+  #choice: TPE, Random, Anneal, Evolution, BatchTuner, MetisTuner
+  #SMAC (SMAC should be installed through nnictl)
+  builtinTunerName: Anneal           # 사용할 스케줄 알고리즘
+  classArgs:
+    #choice: maximize, minimize
+    optimize_mode: minimize          # 최적화 할 때, 기준 지표를 최소화 할지 최대화 할지
+trial:
+  command: python3 trial.py          # 실행 커맨드
+  codeDir: .
