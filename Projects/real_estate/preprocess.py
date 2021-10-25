@@ -142,14 +142,19 @@ def split_test_train(df, preprocess = bool):
     global num_col, log_col, scale_col, cat_col
     
     df_tmp = df.copy()
-    
     df_tmp = drop_raw_df_na(df_tmp)
     
     if preprocess == True:
         df_tmp = impute_na(df_tmp)
-        df_tmp = drop_top_price(df_tmp, 0.80)
-
-        df_tmp = get_perprice(df_tmp)   
+#         print("NA: ",df_tmp.isna().sum().sum())
+#         print("oil drop", df_tmp.shape)
+        df_tmp = drop_top_price(df_tmp, 0.9)
+#         print("top price drop", df_tmp.shape)
+        df_tmp = get_perprice(df_tmp)
+#         print("perprice", df_tmp.shape)
+#         le = LabelEncoder()
+#         df_tmp["dong_label"] = le.fit_transform(df_tmp["dong"])
+        
         df_tmp["doro_trans"] = df_tmp["doro"].apply(lambda x: get_road(x))
         df_tmp["year_trans"] = df_tmp["date"].apply(lambda x: get_year_trans(x))
         df_tmp = get_year_gap(df_tmp)
@@ -159,9 +164,17 @@ def split_test_train(df, preprocess = bool):
         df_tmp["floor"] = df_tmp["floor"] + 3
         
         df_tmp = get_pop_rate(df_tmp)
+#         print(df_tmp.shape)
+    
+    
         df_tmp = categorize(df_tmp)
 
+        
+#         print(df_tmp.shape)
+
     test = df_tmp[df_tmp["date"].str.contains("2021")].copy()
+#     print(df.shape)
+#     print(test.shape)
     data = df_tmp.drop(test.index, axis = 0)
     data = data.reset_index(drop = True)
     test = test.reset_index(drop = True)
@@ -172,37 +185,11 @@ def split_test_train(df, preprocess = bool):
     data = data.drop("perprice", axis = 1)
     test = test.drop("perprice", axis = 1)
     
-    num_col = data.select_dtypes(exclude = ["object","category"]).columns.to_list()
+#     target = data["price"]
+#     y_test_true = test["price"]
     
-    log_col = ["area", "perhold", "male_for", "female_for", "floor"] 
-    cat_col = data.select_dtypes(include = ["object", "category"]).columns.to_list()
-
-    return data, target, test, y_test_true    
-
-
-# ---------------------------------------------------------------------------------------------
-    
-def scale_data(X_train, X_valid, X_test):
-    tmp_X_train = X_train.copy()
-    tmp_X_valid = X_valid.copy()
-    tmp_X_test = X_test.copy()
-    
-    tmp_X_train = tmp_X_train.reset_index(drop = True)
-    tmp_X_valid = tmp_X_valid.reset_index(drop = True)
-    tmp_X_test = tmp_X_test.reset_index(drop = True)
-    
-    
-    # scale
-
-    
-    sd_scaler = StandardScaler()
-    rb_scaler = RobustScaler()
-    
-    tmp_X_train[num_col] = sd_scaler.fit_transform(tmp_X_train[num_col])
-    tmp_X_valid[num_col] = sd_scaler.transform(tmp_X_valid[num_col])
-    tmp_X_test[num_col] = sd_scaler.transform(tmp_X_test[num_col])
-    
-    
+#     data = data.drop("price", axis = 1)
+#     test = test.drop("price", axis = 1)
     final_col = [
 #                  'date', 
                  'gu', 
@@ -217,31 +204,75 @@ def scale_data(X_train, X_valid, X_test):
                  'unemployment',
                  'inflation',
                  'stock',
-                 'house_debit',
+#                  'house_debit',
                  'ex_dollar',
 #                  'ex_yen',
-                 'household',
+#                  'household',
                  'pop',
 #                  'male_kor',
 #                  'female_kor',
 #                  'male_for',
 #                  'female_for',
-                 'rate_male',
+#                  'rate_male',
                  'rate_female',
                  'rate_male_f', 
                  'rate_female_f',
                  'rate_senior',
                  'perhold',
-                 'senior',
+#                  'senior',
 #                  'dong_label',
                  'doro_trans',
 #                  'year_trans',
                  'year_gap',
                  'floor_level',
                  'oil_price'
+                 
                 ]
+
+    data = data[final_col]
+    test = test[final_col]
+    num_col = data.select_dtypes(exclude = ["object","category"]).columns.to_list()
+    log_col = ["area", "perhold", "male_for", "female_for", "floor"] 
+    cat_col = data.select_dtypes(include = ["object", "category"]).columns.to_list()
+    
+    return data, target, test, y_test_true
+
+    
+    
+
+    
+#     df_tmp = data.drop(["perprice","built", "doro","growth","ex_yen","make_kor", "female_kor", "male_for","female_for", "dong_label", "year_trans"], axis = 1)
+    
+#     num_col = data.select_dtypes(exclude = ["object","category"]).columns.to_list()
+#     log_col = ["area", "perhold", "male_for", "female_for", "floor"] 
+#     cat_col = data.select_dtypes(include = ["object", "category"]).columns.to_list()
+# ---------------------------------------------------------------------------------------------
+    
+def scale_data(X_train, X_valid, X_test):
+    tmp_X_train = X_train.copy()
+    tmp_X_valid = X_valid.copy()
+    tmp_X_test = X_test.copy()
+    
+    tmp_X_train = tmp_X_train.reset_index(drop = True)
+    tmp_X_valid = tmp_X_valid.reset_index(drop = True)
+    tmp_X_test = tmp_X_test.reset_index(drop = True)
+    
+    
+    # scale
+    sd_scaler = StandardScaler()
+#     rb_scaler = RobustScaler()
+    
+    tmp_X_train[num_col] = sd_scaler.fit_transform(tmp_X_train[num_col])
+    tmp_X_valid[num_col] = sd_scaler.transform(tmp_X_valid[num_col])
+    tmp_X_test[num_col] = sd_scaler.transform(tmp_X_test[num_col])
+    
     return tmp_X_train[final_col], tmp_X_valid[final_col], tmp_X_test[final_col]
 
     
 if __name__ == '__main__':
-    split_test_train(df, preprocess = bool)
+    split_test_train(df)
+    
+    
+    
+
+    
